@@ -1,0 +1,13 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Never commit credential-bearing files, even by accident
+.env
+.env.*
+*.pem
+*.key
+.mcp.json
+.credentials.json
