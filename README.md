@@ -56,6 +56,7 @@ dev-playbook/
 | `airgap-image-transfer` | Move OCI/Docker images to an airgapped machine with skopeo/regctl, avoiding `docker save`'s dropped layers. |
 | `dev-playbook` | Project-agnostic engineering practices — layered testing, quality gates, branch/PR discipline, secrets hygiene, docs-as-code. |
 | `explainer-artifacts` | Build diagram-led explainer artifacts for teaching a concept or supporting a decision. |
+| `go-playbook` | The Go specifics `dev-playbook` leaves as "translate to your stack": `-race`, the test cache, build tags, CGo versus a single binary, boundary enforcement, plus a copyable Makefile and CI. |
 | `natural-writing` | Write prose that doesn't read like an LLM wrote it. |
 | `pandan` | Read and write the Pandan kanban board via the `pandan` CLI. |
 | `pandan-pm` | Act as scrum-master over the Pandan board, delegating cards to sub-agents. |
