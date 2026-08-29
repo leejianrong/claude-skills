@@ -53,6 +53,7 @@ dev-playbook/
 
 | Skill | What it does |
 | --- | --- |
+| `agent-brief` | Write, trim, or audit a CLAUDE.md/AGENTS.md file: the discoverability filter, size discipline, and when to add a rule. |
 | `airgap-image-transfer` | Move OCI/Docker images to an airgapped machine with skopeo/regctl, avoiding `docker save`'s dropped layers. |
 | `dev-playbook` | Project-agnostic engineering practices — layered testing, quality gates, branch/PR discipline, secrets hygiene, docs-as-code. |
 | `explainer-artifacts` | Build diagram-led explainer artifacts for teaching a concept or supporting a decision. |
@@ -61,6 +62,8 @@ dev-playbook/
 | `pandan` | Read and write the Pandan kanban board via the `pandan` CLI. |
 | `pandan-pm` | Act as scrum-master over the Pandan board, delegating cards to sub-agents. |
 | `plan-new-project` | Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one interview. |
+| `readme-playbook` | Write or audit a project README: audience-first structure, anti-patterns, what changes by project type. |
+| `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
 | `write-tech-blog-post` | Draft a publishable technical blog post in my voice and get it to Notion. |
 
 ### Vendored from upstream

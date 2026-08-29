@@ -24,6 +24,9 @@ A markdown file at the repo root that every agent session loads. What makes it w
 Keep it current. When a convention changes, the brief changes in the same PR. A stale brief is
 worse than none, because it's authoritative.
 
+For the deep dive on crafting and maintaining this file well — what belongs in it, size
+discipline, progressive disclosure, when to add a rule — see the `agent-brief` skill.
+
 ## Permission allowlist
 
 Seed a per-developer permission allowlist (e.g. `.claude/settings.local.json`) so routine,
