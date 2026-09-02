@@ -18,14 +18,11 @@ fallback**, for when the CLI isn't installed or errors. Cards, boards, epics, la
 card templates, dependencies, work-links, comments, dispatch/claim, needs-human handoff, metrics and
 the activity feed are all reachable from either.
 
-> **Not quite full parity — the relationship is MCP ⊇ CLI.** This section previously claimed "full
-> parity as of v0.3.0" while the *same file* documented a `curl` workaround for a missing CLI verb
-> forty lines below. Verified 2026-07-31 (KAN-432, ADR 0019): `pandan board` has only `list` and
-> `create`, so **`update_board` and `delete_board` are MCP-only**; `create_cards` (batch) has no CLI
-> verb; and `pandan next --claim` claims whatever is *next* rather than a chosen card, so it is not an
-> exact substitute for `claim_card`. Everything else is reachable from both. Don't repeat the "full
-> parity" shorthand — it was inherited into a roadmap card and nearly justified deleting the MCP
-> surface. Closing these four gaps is tracked as **KAN-502**.
+> **Not full parity — the relationship is MCP ⊇ CLI.** `pandan board` has only `list` and `create`,
+> so **`update_board` and `delete_board` are MCP-only**; `create_cards` (batch) has no CLI verb; and
+> `pandan next --claim` claims whatever is *next* rather than a chosen card, so it is not an exact
+> substitute for `claim_card`. Everything else is reachable from both. Closing these four gaps is
+> tracked as **KAN-502**.
 
 Prefer `pandan`. Drop to MCP only when you have to, and say why when you do.
 
@@ -155,130 +152,11 @@ until pandan warmup; do sleep 2; done
 ## Command surface
 
 Cards are the top-level verbs; `board`, `epic`, `label`, `view`, `template`, `dep`, `link`, and
-`comment` are nested groups. Columns are `todo`, `in_progress`, `done`. Story points are one of
-{1,2,3,5,8,13}. Priority is one of `none`/`low`/`medium`/`high`/`urgent`. Every command takes `--json`
-for machine-readable output you can pipe into `jq`; the human line for a card is
-`ticket  column  title  pts=N` (`pts=-` when unestimated).
+`comment` are nested groups. Every command takes `--json` for machine-readable output; the human
+line for a card is `ticket  column  title  pts=N` (`pts=-` when unestimated).
 
-**`--json` output is enveloped for list verbs, bare for single reads — don't guess the shape**
-(KAN-434, verified 2026-07-31). `--json` is a verbatim passthrough of the shared client's return
-value, and the *client* adds the envelope (a raw `GET /api/v1/cards` is a bare array), so the key
-differs per verb:
-
-| Verb | Top-level `--json` shape |
-|---|---|
-| `list` | `{"cards": [...]}` **+ `next_cursor`** when the page is full |
-| `activity` | `{"activity": [...]}` + `next_cursor` |
-| `board list` / `epic list` / `label list` / `view list` / `template list` / `comment list` / `cycle list` / `notify list` | `{"boards"}` / `{"epics"}` / `{"labels"}` / `{"views"}` / `{"templates"}` / `{"comments"}` / `{"cycles"}` / `{"notifications"}` |
-| `next`, `next --claim` | `{"card": {...}}` — `{"card": null}` when nothing is ready |
-| `batch-update` / `template apply` | `{"updated": [...]}` / `{"created": [...]}` |
-| `dep add`/`rm`/`list` | `{"card_id", "blocked_by", "blocks"}` |
-| `link add`/`rm` | `{"card_id", "links"}` |
-| any `delete` | `{"deleted": <id>}` |
-| `warmup` | `{"status", "health"}` |
-| `get`, `create`, `update`, `move`, `needs-human`, `resolve`, `comment add`, `notify read`, and every `<group> create/update` | **bare entity object** — no envelope |
-| `metrics`, `cycle metrics`, `config show` | **bare object** — no envelope |
-
-```bash
-pandan list --json | jq -r '.cards[] | "\(.ticket_number)\t\(.title)"'   # NOT .[]
-pandan next --json | jq -r '.card.ticket_number // "none ready"'
-pandan get KAN-7 --json | jq -r .title                                   # single reads are BARE
-```
-
-The envelope is load-bearing (`next_cursor` rides there, and a `summary` field is coming) — treat it
-as the contract, not an accident.
-
-**`--fields a,b,c` widens the human row on any list verb** (V42/KAN-425) — cheaper than `--json` when
-you want two or three extra columns rather than the whole record:
-
-```bash
-pandan list --column todo --fields ticket,title,priority   # tab-separated, `-` for null
-```
-
-The vocabulary is that row's own `--json` keys plus the aliases `ticket` and `pts`/`points`; an unknown
-name is a clean error naming it. Omitting `--fields` leaves the default
-`ticket  column  title  pts=N` row byte-identical, and `--fields` **does not** affect `--json` (that's
-already the full record). Not available on single-entity verbs like `get` — there it's a usage error,
-not a silent no-op. Don't confuse it with `--sort`, whose help line lists **`Sort keys:`**.
-
-Cards:
-
-- `pandan list [--board N] [--column C] [--epic ID] [--priority P] [--label ID] [--assignee A] [--due-before ISO] [--overdue] [--needs-human] [--q TEXT] [--sort SPEC] [--limit N] [--json]`
-  — query/filter cards. `--q` is full-text search over title+description; `--sort` takes
-  comma-separated keys, `-` prefix = descending (e.g. `--sort -priority,position`). Large results
-  paginate; the output includes a next-cursor to continue.
-- `pandan get <card_id> [--json]`
-- `pandan create "<title>" [--board N] [--description D] [--column C] [--points N] [--assignee A] [--epic ID] [--priority P] [--due ISO] [--label ID ...] [--json]`
-- `pandan update <card_id> [--title T] [--description D] [--points N] [--assignee A] [--epic ID] [--priority P] [--due ISO] [--label ID ...] [--json]`
-  — field edits only. It does **not** change the column; use `move` for that. `--label` replaces the
-  card's labels with the given ids.
-- `pandan move <card_id> <column> [--position N]` — the dedicated column/position change.
-- `pandan delete <card_id> --yes` — `--yes` is required as a guard.
-- `pandan batch-update '<JSON array of {id, ...fields}>'` (or `-` for stdin) — atomically PATCH several
-  cards in one call (all-or-nothing).
-
-Agent operating verbs (the write side of the human↔agent surface):
-
-- `pandan next [--board N] [--claim] [--assignee A] [--label ID] [--priority P] [--json]` — show the next
-  ready card (highest priority, unblocked, in `todo`); `--claim` atomically dispatches it (sets
-  assignee + moves to `in_progress`), which is fleet-safe across concurrent agents.
-- `pandan needs-human <card_id> [--note N]` — flag a card for a human decision. `pandan resolve <card_id>`
-  — clear the flag. (Filter with `pandan list --needs-human`.)
-
-Dependencies, work-links, comments (nested groups):
-
-- `pandan dep add <card_id> --blocked-by <other_id>` · `pandan dep rm <card_id> --blocked-by <other_id>` ·
-  `pandan dep list <card_id>`
-- `pandan link add <card_id> --url <url> --label <label>` · `pandan link rm <card_id> --link-id <id>`
-- `pandan comment add <card_id> --body "…"` · `pandan comment list <card_id>`
-
-Boards, epics, labels, saved views, templates:
-
-- `pandan board list [--json]` · `pandan board create "<name>" [--json]`
-- `pandan epic list [--board N] [--json]` · `pandan epic create "<name>" [--board N] [--description D] [--json]`
-- `pandan epic update <epic_id> [--name N] [--description D] [--json]` · `pandan epic delete <epic_id> --yes [--json]`
-- `pandan label list [--board N] [--json]` · `pandan label create "<name>" [--color C] [--board N] [--json]` · `pandan label delete <label_id> --yes [--json]`
-- `pandan view list|create|delete …` — saved named filter/sort views.
-- `pandan template list|create|delete|apply …` — card templates; `apply` seeds a template's cards onto a board in one call.
-
-Reporting (read-only, derived):
-
-- `pandan metrics [--board N] [--since ISO] [--window SPAN] [--json]` — throughput / cycle time / aging WIP / per-assignee.
-- `pandan activity [--board N] [--actor LABEL] [--action VERB] [--limit N] [--cursor C] [--json]` — the board's activity feed, newest-first.
-
-Ops:
-
-- `pandan warmup [--json]` — wake the server; no token needed.
-- `pandan --version` / `pandan -v` — print the version **and build provenance**, then exit. A released
-  binary reports `pandan 0.7.0 (bd28cf0)` (the commit it was built from); a source run says
-  `(source checkout, not a released build)`. **If a `pandan` behaves unexpectedly, check this first** —
-  a stale binary that predates a fix used to be indistinguishable from current source, which caused
-  two false bug reports (KAN-435).
-- `pandan login` / `pandan config set|show|path` — one-time auth + config file (see Setup).
-
-### Errors and exit codes (the machine contract, V43/KAN-426)
-
-Exit codes: `0` success, `1` generic/runtime error, `2` usage (argparse rejected argv), `3`
-unauthorised (401), `4` forbidden (403), `5` not found (404). So a script tells "bad token" from
-"not your board" from "gone" without parsing text. The rule behind 1-vs-2: **argparse rejected argv →
-2; the CLI rejected a runtime value → 1.**
-
-**Errors go to stdout, structured** — not stderr as prose:
-
-```
-$ pandan get KAN-999999
-error	not_found	no card found with ticket KAN-999999	KAN-999999      # exit 5
-```
-
-Tab-separated `error <code> <message> <arg>`, or under `--json` an
-`{"error": {code, message, arg, status, exit_code}}` object with all five keys always present. Branch
-on the stable `code` (`not_found`, `unauthorized`, `forbidden`, `config`, `unknown_field`,
-`confirmation_required`, `invalid_ref`, `transport`, …), never on message text. Human `usage:` text
-still goes to stderr.
-
-**A card that doesn't exist reports the same code however you addressed it** — `pandan get 999999` and
-`pandan get KAN-999999` both exit `5`. Before v0.7.0 the ticket-ref form exited `1`, so the code
-depended on the identifier form rather than the failure.
+See `references/command-reference.md` for the full verb list, the `--json` envelope shape per
+verb, `--fields`, and exit codes.
 
 ## Example workflows
 
@@ -309,8 +187,9 @@ pandan move 42 done
 ## When to fall back to MCP
 
 Use the `mcp__pandan__*` tools instead of `pandan` when the CLI isn't installed / not on PATH, or a
-`pandan` command errors for an environment reason (not a 4xx from the API). The CLI and MCP are at **full
-parity**, so every `pandan` verb has an MCP twin:
+`pandan` command errors for an environment reason (not a 4xx from the API). MCP is a superset of the
+CLI (see the MCP ⊇ CLI note near the top) — every `pandan` verb has an MCP twin, plus the four gaps
+noted there:
 
 - **Cards:** `list_cards`, `get_card`, `create_card`, `create_cards` / `update_cards` (batch),
   `update_card`, `move_card`, `claim_card`, `delete_card`.
@@ -347,11 +226,9 @@ missing command, or a CLI↔MCP parity gap while driving the board, open an issu
 Keep it short and reproducible: include `pandan --version`, the exact command and its error, and the
 workaround you used if any. Mention you were using the `pandan` skill.
 
-Known gap (as of `pandan 0.3.0`): the `pandan board` group has only `list` and `create` — no
-`get`/`update`/`delete` — so **renaming or editing a board isn't possible from the CLI**. This is one of
-the gaps the MCP ⊇ CLI note at the top of this file records; it is *why* that note exists. Use the MCP
-`update_board` tool, or a raw REST call, until it lands
-(tracked in <https://github.com/leejianrong/pandan/issues/172>):
+The `pandan board` group's missing `update`/`delete` (see the MCP ⊇ CLI note near the top) means
+renaming or editing a board isn't possible from the CLI yet. Use the MCP `update_board` tool, or a raw
+REST call, until it lands (tracked in <https://github.com/leejianrong/pandan/issues/172>):
 
 ```bash
 curl -X PATCH "$PANDAN_API_URL/api/v1/boards/<id>" \

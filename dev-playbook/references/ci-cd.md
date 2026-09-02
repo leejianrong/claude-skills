@@ -4,6 +4,15 @@ The pipeline exists to make "it works on my machine" irrelevant. Two properties 
 it's **fast enough that people wait for it**, and its result is **trustworthy** — green means
 shippable, red means broken.
 
+## Contents
+- The pre-push hook: a fast local gate
+- CI workflow
+- Keep pinned actions and the runner toolchain current
+- Required vs reported checks
+- Infra flake vs real failure
+- Deploy: gated, validated, armable
+- Observability, briefly
+
 ## The pre-push hook: a fast local gate
 
 Install a pre-push hook that runs the cheap CI jobs locally: lint, type-check, and the

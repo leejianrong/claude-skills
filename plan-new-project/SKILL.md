@@ -1,6 +1,6 @@
 ---
 name: plan-new-project
-description: Plan a new software project fast. Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one short interview instead of a multi-step process. The agent answers its own questions and escalates only the decisions that genuinely need the user. Use when starting a greenfield project or feature and you want a plan today, not a document trail over a week. Also resumes a project stalled partway through the longer build-plan-product / build-plan-specs process.
+description: Plan a new software project fast. Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one short interview instead of a multi-step process. The agent answers its own questions and escalates only the decisions that genuinely need the user. Use when starting a greenfield project or feature and you want a plan today, not a document trail over a week. Also resumes a project stalled partway through a longer FRAME/PRD/SHAPING-style planning process.
 license: MIT
 metadata:
   author: jian
@@ -19,14 +19,16 @@ with the same decision coverage a long process would have reached.
 - "Help me plan this project / feature"
 - A rough idea exists (in a file, or just in the user's head) and the next thing
   needed is a plan an agent can build from
-- A project stalled partway through `build-plan-product` or `build-plan-specs`
-  and needs finishing quickly (see "Resume mode")
+- A project stalled partway through a longer planning process (partial
+  FRAME.md/PRD.md/SHAPING.md/ADRs on disk) and needs finishing quickly (see
+  "Resume mode")
 
 ## When not to apply
 
 - The plan already exists and the job is implementation
 - The project is large enough that competing architectures need a real bake-off,
-  with people to convince. Use `build-plan-product` + `build-plan-specs` for that.
+  with people to convince — that kind of multi-round consensus process is
+  outside this skill's scope.
 
 ## Inverted grilling
 
@@ -203,8 +205,8 @@ Add domain categories when the project needs them, and never drop one silently.
 
 ## Resume mode
 
-For a project stalled partway through `build-plan-product` or
-`build-plan-specs`. The point is to salvage the work rather than redo it.
+For a project with partial planning artifacts already on disk from a longer,
+document-heavy process. The point is to salvage the work rather than redo it.
 
 1. Inventory what exists: `REQS.md`, `QUESTIONS.md`, `CONTEXT.md`, `docs/adr/*`,
    `docs/PRD.md`, `FRAME.md`, `SHAPING.md`, `SPIKE-*.md`, `BREADBOARD.md`,
@@ -252,13 +254,6 @@ Planning skills fail by producing volume.
 `SLICES.md` is the build handoff. Both optional next steps come from existing
 skills:
 
-- `/build-plan-specs` step D publishes the slices to a Simple Kanban board, one
-  epic per slice
+- `/pandan-pm` (or the `pandan` CLI directly) to publish the slices to the
+  Pandan board, one epic per slice
 - `/dev-playbook` for test layering, quality gates and CI on the way in
-
-## Related skills
-
-- `build-plan-product`, `build-plan-specs`: the long-form process this compresses.
-  Prefer them when a real architectural bake-off is needed.
-- `shaping`, `grill-with-docs`, `to-prd`: where the methods come from, namely
-  requirements and shapes, the relentless interview, and the PRD sections.

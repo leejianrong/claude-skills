@@ -5,6 +5,14 @@ list, and it works as-is. A scaffold with two stub binaries and one test package
 the whole `ci` target in under five seconds, which is the point: a gate people wait for is
 a gate people keep.
 
+## Contents
+- Makefile
+- .golangci.yml
+- CI workflow
+- Pre-push hook
+- .gitignore
+- Installing Go itself
+
 ## Makefile
 
 Tabs, not spaces, for recipe lines.
