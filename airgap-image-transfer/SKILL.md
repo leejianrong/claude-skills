@@ -134,4 +134,3 @@ Then reference that internal image from your Deployment/Pod specs.
 - **Install (internet side):** `skopeo` and `regctl` are single tools; on Debian/Ubuntu
   `apt install skopeo`, or grab static binaries. If you need them airgapped too,
   transfer their binaries the same way you'd transfer any other CLI.
-```

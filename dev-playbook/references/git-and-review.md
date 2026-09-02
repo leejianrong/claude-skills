@@ -32,6 +32,21 @@ remote before cutting the next branch, or the next branch starts from a stale ba
 working in a worktree should run git only against its own worktree path, never `cd` into the
 parent checkout.
 
+**Give each worktree its own stateful infra** — don't share one local database across
+worktrees. Worktrees share a filesystem-level dev DB, so one branch's migration stamps a
+revision the others don't have, and their apps then fail to boot against a DB ahead of their
+own migration chain. Isolate per worktree (a throwaway DB container on a per-worktree port, or
+a separate DB name on the shared server) and expose it as a make target; ephemeral,
+self-provisioning test infra like testcontainers sidesteps this automatically.
+
+**Don't let worktrees accumulate.** A fresh worktree per task silently piles up full checkouts
+and clogs disk — an agent harness that auto-creates isolated worktrees is the worst offender.
+Prefer a **pool manager** that recycles a fixed set of detached-HEAD worktrees and prunes
+idle/merged ones — e.g. **[treehouse](https://github.com/kunchenguid/treehouse)** (`treehouse
+get` to acquire, `treehouse return` to release, `treehouse prune` to reclaim). Without one,
+make removal part of the land step (`git worktree remove` when a branch merges) and
+periodically `git worktree prune` plus delete merged branches (`git branch --merged main`).
+
 ## Parallelize implementation, serialize the landing
 
 You can have several branches coded at once **only if their file sets are provably disjoint** —

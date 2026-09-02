@@ -53,14 +53,10 @@ Each principle names the practice and the smell that means it's missing. Depth l
 
 5. **Prove a guard by watching it fail.** A test that passes says nothing about a
    compatibility promise or a safety check until you have seen it go red: temporarily break
-   the thing it protects, confirm the failure names the right thing, then restore. *Smell:
-   "I added a test" offered as the whole evidence that a regression cannot recur.* Do the
-   mutation **non-destructively** — `git checkout -- <file>` and `git restore <file>`
-   overwrite the working tree from the **index**, silently discarding uncommitted changes to
-   that file, and unstaged work never entered the object database so no reflog or `fsck` can
-   bring it back. Safe options, cheapest first: commit (or `git stash push -- <file>`) before
-   mutating; edit a copy; or apply the mutation as a patch and reverse exactly it with
-   `git apply -R`.
+   the thing it protects, confirm the failure names the right thing, then restore —
+   non-destructively, never with `git checkout --`/`git restore` on uncommitted work. See
+   `references/layered-testing.md`. *Smell: "I added a test" offered as the whole evidence
+   that a regression cannot recur.*
 
 ### Gates and CI/CD
 
@@ -90,20 +86,8 @@ Each principle names the practice and the smell that means it's missing. Depth l
 
 10. **Branch per slice, PR-only, protected main.** One branch per vertical slice off fresh
    `main`; every change lands via PR after CI is green; no direct pushes. Use worktrees (or
-   an agent's worktree isolation) for parallel work so in-flight branches don't collide. See
-   `references/git-and-review.md`. *Give each worktree its own stateful infra — don't share one
-   local database across worktrees. Worktrees share a filesystem-level dev DB, so one branch's
-   migration stamps a revision the others don't have and their apps then fail to boot against a DB
-   ahead of their own migration chain. Isolate per worktree (a throwaway DB container on a
-   per-worktree port, or a separate DB name on the shared server) and expose it as a make target;
-   ephemeral, self-provisioning test infra like testcontainers sidesteps this automatically.*
-   *Don't let worktrees accumulate — a fresh worktree per task silently piles up full checkouts and
-   clogs disk (an agent harness that auto-creates isolated worktrees is the worst offender). Prefer a
-   **pool manager** that recycles a fixed set of detached-HEAD worktrees and prunes idle/merged ones —
-   e.g. **[treehouse](https://github.com/kunchenguid/treehouse)** (`treehouse get` to acquire,
-   `treehouse return` to release, `treehouse prune` to reclaim). Without one, make removal part of the
-   land step (`git worktree remove` when a branch merges) and periodically `git worktree prune` +
-   delete merged branches (`git branch --merged main`).*
+   an agent's worktree isolation) for parallel work, each with its own isolated stateful infra,
+   and don't let them pile up — prune or pool them. See `references/git-and-review.md`.
 
 11. **Keep slices small and reversible; flag risky changes off by default.** A change that
     alters live behavior ships behind a config flag defaulting to the current behavior, so

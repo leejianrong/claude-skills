@@ -74,13 +74,8 @@ its licence before reusing.
 
 | Skill | Source | Path upstream |
 | --- | --- | --- |
-| `build-plan-product` | [bguiz/build-agent-skills](https://github.com/bguiz/build-agent-skills) | `skills/build-1-plan-product/` |
-| `build-plan-specs` | [bguiz/build-agent-skills](https://github.com/bguiz/build-agent-skills) | `skills/build-2-plan-specs/` |
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | `skills/find-skills/` |
 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) | `skills/frontend-design/` (LICENSE.txt included) |
-| `grill-with-docs` | [mattpocock/skills](https://github.com/mattpocock/skills) | `skills/engineering/grill-with-docs/` |
-| `shaping` | [rjs/shaping-skills](https://github.com/rjs/shaping-skills) | `shaping/` |
-| `to-prd` | [mattpocock/skills](https://github.com/mattpocock/skills) | `skills/engineering/to-prd/` |
 
 To pull an upstream fix, copy the updated directory in and open a PR — there is
 no lock file or updater in play anymore.

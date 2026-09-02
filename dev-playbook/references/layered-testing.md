@@ -84,3 +84,16 @@ sometimes the honest fix. Prove stability by running the once-flaky test many ti
 A bug fix without a regression test is unfinished. Reproduce the bug in a failing test, watch
 it fail, then fix it. The same applies to a flake: encode the determinism you added as an
 assertion so the race can't return.
+
+## Prove a guard by watching it fail
+
+A test that passes says nothing about a compatibility promise or a safety check until you have
+seen it go red: temporarily break the thing it protects, confirm the failure names the right
+thing, then restore. "I added a test" is not evidence a regression cannot recur until you've
+watched that test catch the regression once.
+
+Do the mutation **non-destructively**. `git checkout -- <file>` and `git restore <file>`
+overwrite the working tree from the **index**, silently discarding uncommitted changes to that
+file — and unstaged work never entered the object database, so no reflog or `fsck` can bring it
+back. Safe options, cheapest first: commit (or `git stash push -- <file>`) before mutating; edit
+a copy; or apply the mutation as a patch and reverse exactly it with `git apply -R`.
