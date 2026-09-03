@@ -1,0 +1,43 @@
+# Copy this file to docker-compose.override.yml (gitignored, like .env —
+# `docker compose` loads it automatically alongside docker-compose.yml, no
+# extra flag needed) to route <service> through a machine-wide Traefik
+# instance at http://<project>.localhost/ instead of a directly-published
+# port. Requires that instance to already be running with a `proxy`
+# external network — see dev-proxy-compose.yml.
+#
+# Nothing here is required: docker-compose.yml must keep working standalone
+# with no override present (including in CI), publishing <service> directly
+# on its own host port instead. This file only ever adds to that default,
+# never replaces it — keep the direct port published either way, so both
+# paths work at once.
+#
+# Replace <service>, <project> and <port> throughout before using.
+services:
+  <service>:
+    # `default` (the project's own implicit network, needed to reach
+    # sibling services by name) plus `proxy` (Traefik's network) — list
+    # both explicitly here, since an override's own `networks:` isn't
+    # merged with the base file's implicit one, it replaces it.
+    networks:
+      - default
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.<project>.rule=Host(`<project>.localhost`)
+      - traefik.http.services.<project>.loadbalancer.server.port=<port>
+      # Only needed if <service> is a dev server whose websocket/HMR
+      # upgrade validates the Host header more strictly than its plain-
+      # HTTP check — Vite does this: allowedHosts only looks at the
+      # hostname, but the HMR websocket upgrade separately requires
+      # `hostname:port` matching its own listening port. Traefik forwards
+      # the original Host header (`<project>.localhost`, no port, since
+      # that's what the browser sent on port 80) unless told otherwise;
+      # this rewrites it to what the strict check actually wants. Drop
+      # this middleware entirely if <service> doesn't have that class of
+      # check.
+      - traefik.http.routers.<project>.middlewares=<project>-host-rewrite
+      - traefik.http.middlewares.<project>-host-rewrite.headers.customrequestheaders.Host=<project>.localhost:<port>
+
+networks:
+  proxy:
+    external: true

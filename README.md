@@ -63,6 +63,7 @@ dev-playbook/
 | `pandan-pm` | Act as scrum-master over the Pandan board, delegating cards to sub-agents. |
 | `plan-new-project` | Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one interview. |
 | `readme-playbook` | Write or audit a project README: audience-first structure, anti-patterns, what changes by project type. |
+| `traefik-dev-proxy` | Set up one machine-wide Traefik reverse proxy that auto-discovers Docker Compose dev stacks via labels, giving every project a stable `<project>.localhost` hostname. |
 | `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
 | `write-tech-blog-post` | Draft a publishable technical blog post in my voice and get it to Notion. |
 

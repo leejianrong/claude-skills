@@ -1,0 +1,51 @@
+# Machine-wide reverse proxy: one Traefik instance for every local dev
+# stack on this laptop, not per-project. Watches the Docker socket and
+# auto-discovers any container carrying `traefik.enable=true` labels — a
+# new project opts in by adding labels to its own docker-compose file
+# (see project-compose.override.yml.example), never by editing anything
+# here.
+#
+# Run this once, in its own directory (e.g. ~/dev-proxy), independent of
+# any project: `docker compose up -d`.
+#
+# `exposedbydefault=false` is the important safety default: only
+# explicitly labeled containers are ever routed, so a project that hasn't
+# opted in is simply invisible to Traefik, not accidentally exposed.
+#
+# `restart: unless-stopped` plus Docker's own daemon-starts-on-boot
+# behavior is what makes this "always on" — no separate systemd unit
+# needed.
+services:
+  traefik:
+    # Do not pin an old minor. Traefik v3.5's vendored Docker client
+    # hardcodes its opening version-negotiation request at API 1.24, and a
+    # recent Docker Engine (29.x, minimum supported API 1.40) rejects that
+    # opening request outright instead of tolerating it and letting
+    # negotiation proceed — DOCKER_API_VERSION does not help either, since
+    # the rejected request happens before that env var is consulted. The
+    # container still shows `Up` in `docker ps`; `docker logs` is the only
+    # place the failure shows ("client version 1.24 is too old. Minimum
+    # supported API version is 1.40"). v3.7 (or later) resolved it
+    # immediately — if routing silently does nothing and this error is in
+    # the logs, bump the tag, don't debug the network.
+    image: traefik:v3.7
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=proxy
+      - --entrypoints.web.address=:80
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+
+networks:
+  # Named explicitly (not left to the default `<project>_proxy` prefix) so
+  # every other project's compose file can reference it by this exact
+  # name via `external: true`, regardless of what that stack's own
+  # Compose project name happens to be.
+  proxy:
+    name: proxy
