@@ -54,6 +54,24 @@ check the actual files, don't guess from a "same-ish area" hunch. Then **land on
 time**: review, get CI green, merge, update `main`, and only then merge the next. That keeps
 `main` reviewable and bisectable.
 
+**Squash against your own base commit, never against `origin/main`.** `git reset --soft
+origin/main` is the usual way to collapse WIP commits into one, and it is *actively unsafe*
+while sibling branches are landing: `origin/main` moves under you, so the reset diffs your tree
+against a newer commit and stages **every file a sibling landed as a deletion**. Nothing warns
+you — the tree looks right, the index does not, and committing publishes a PR that silently
+reverts someone else's merged work. Record the base when you branch and squash against that:
+
+```bash
+BASE=$(git rev-parse HEAD)        # right after branching
+git reset --soft "$BASE" && git commit    # NOT: git reset --soft origin/main
+```
+
+Two independent agents hit this in a single afternoon on one repo. Both caught it in
+`git status` before committing, which is the only thing standing between it and a bad merge —
+so check `git status` after any soft reset, and treat a deletion you did not make as a stop
+sign. To pick up a sibling's landed work, rebase or merge deliberately; that is a separate
+action from squashing your own history.
+
 A change that carries a database migration **lands alone** and gets verified against the
 deployed environment before the next change stacks on it.
 
