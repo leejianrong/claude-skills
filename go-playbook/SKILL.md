@@ -248,6 +248,85 @@ ten thousand open files. Put the body in its own function or close explicitly.
 `err`, so an outer assignment you expected never happens. `govet`'s shadow check is off by
 default; the pattern is common enough to watch for by eye.
 
+## Parallel agents, worktrees, and shared caches
+
+Running several agents against one repo at once is now normal, and it breaks two
+assumptions Go's tooling makes quietly. Both were found by measurement rather than
+reasoning, which is the only way they get found at all: neither shows up in CI, because
+CI runs one clean checkout with a cold cache.
+
+**Go's caches are per-user, not per-checkout, and one of them carries paths.** `GOCACHE`
+and `GOMODCACHE` being shared is the point — it is what makes the second checkout's build
+fast, and they store content-addressed build outputs, so sharing them is safe.
+`golangci-lint`'s *result* cache is different: it stores **issues**, and an issue carries
+the absolute filename of the checkout that computed it. The key is package content, not
+path. So two checkouts whose sources match hit each other's entries, and you get a finding
+reported against a path in someone else's directory — or, once that directory is deleted,
+against a path that no longer exists:
+
+```
+level=warning msg="[runner] Can't process results by generated_file_filter processor:
+  ... /tmp/<deleted-worktree>/internal/x/errors.go: no such file or directory"
+```
+
+Give each checkout its own:
+
+```make
+lint: export GOLANGCI_LINT_CACHE := $(CURDIR)/$(BIN)/golangci-lint-cache
+```
+
+Worth knowing precisely, because it changes how alarmed to be: this is misattribution and
+noise, **not** a vacuous green. A failed processor leaves the issue list untouched, the
+exit code is still 1, and because the key is content the reused issue is a *true* issue
+about identical bytes, merely labelled with a path you cannot open. It does break
+`//nolint` directives and path-anchored exclusions, and it breaks them in the fail-loud
+direction. Do not add a "did the linter check anything" guard for this; there is no path
+by which it reports success having checked nothing.
+
+**`gofmt` is the one tool that walks directories literally.** `go build`, `go vet`,
+`go test` and `golangci-lint` all skip directories whose names begin with `.` or `_` —
+measured, not assumed, and it holds. `gofmt -l .` does not, so on a machine with agent
+worktrees under `.claude/`, `.worktrees/` or similar, it lints half-written files from
+other checkouts and fails a gate with a message that gives no hint where the file came
+from. Confine it to the packages the module actually builds:
+
+```make
+GOPKGDIRS = $(shell go list -f '{{.Dir}}' ./...)
+```
+
+Then guard the list, because `go list` fails whenever the module does not load, and
+`gofmt -l` handed an empty list reads stdin, finds nothing, and exits 0 — a gate reporting
+success having checked no files, loudest exactly when it goes quiet. Fail on an empty
+list.
+
+**Manage worktree lifecycle with a pool manager that leases.** Hand-rolled `git worktree
+add` plus a cleanup sweep is the combination that eventually deletes a worktree an agent
+is still working in. A pool manager (`treehouse` is the one in use here) fixes the
+lifecycle specifically:
+
+```bash
+treehouse get --lease --lease-holder agent-<id>   # prints the path; never handed out twice
+treehouse status --json                            # what is live, before you clean anything
+treehouse return <path>                            # release when the agent is done
+treehouse prune                                    # dry run by default; --yes to act
+treehouse destroy <path>                           # dry run by default; skips risky classes
+```
+
+A leased worktree is never handed out by a later `get` and never removed by `prune`, even
+with no process running in it, until it is returned. `prune` only considers a worktree
+stale when it is unleased, idle, clean, and already merged into the default branch.
+`destroy` removes only the disposable set unless you opt in per risk class
+(`--include-unlanded`, `--include-in-use`, `--include-leased`), and refuses a global sweep
+outright.
+
+**Be honest about what this does and does not buy you.** A pool manager hands out
+*ordinary* git worktrees — the same shared `.git/config`, object store, ref store and
+stash as any other. It is a lifecycle tool, not an isolation boundary, and it would not
+prevent a stray `git config` or a `GIT_DIR`-redirected subprocess from reaching the real
+repository. Those need the discipline in `dev-playbook` and a static check on your git
+subprocesses. Adopt a pool manager for the accumulation-and-accidental-deletion problem,
+which is the one it actually solves.
+
 ## Standing up a Go repo
 
 In order. Each step is useful alone.
@@ -285,3 +364,7 @@ Every "no" is a gap, roughly in priority order.
 - Does every blocking call take a `context.Context`?
 - Are build artefacts anchored in `.gitignore`?
 - If there is a stated architectural boundary, is anything actually enforcing it?
+- Is `gofmt` confined to `go list` output, and does the gate fail on an empty list?
+- If more than one checkout of the repo exists on a machine (agent worktrees, a second
+  clone), does `golangci-lint` get a per-checkout `GOLANGCI_LINT_CACHE`?
+- Are worktrees leased rather than swept, so a cleanup cannot delete one still in use?
