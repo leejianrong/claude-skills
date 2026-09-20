@@ -3,6 +3,14 @@
 The workflow exists so that `main` is always shippable and every change is reviewable in
 isolation. The mechanics are simple; the discipline is the point.
 
+## Contents
+- Branch per slice, PR-only, protected main
+- Worktrees for parallel work
+- Parallelize implementation, serialize the landing
+- Merge vs squash
+- Small and reversible; risky changes behind a flag
+- Review adversarially
+
 ## Branch per slice, PR-only, protected main
 
 - **One branch per vertical slice**, cut from fresh `main`. A slice is a change small enough
