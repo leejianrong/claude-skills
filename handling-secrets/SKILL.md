@@ -41,6 +41,27 @@ Both need a hard rule, applied every time, not just when a leak seems likely.
   variable so a job running on that container can call back. That's fine; the secret has to
   go there. The rule is about never typing/echoing it into *your own* terminal or transcript,
   not about the secret never existing anywhere at all.
+- **Never let a command substitution feed `export`/`env`/`set` with no other arguments.**
+  `export $(cmd)` degrades silently to bare `export` -- which prints the entire current
+  environment, no arguments needed -- if `cmd` produces empty output. Same landmine for a
+  bare `env` or `set`. There's no error; the substitution just vanishes and the builtin's
+  zero-argument behavior takes over, dumping everything exported in the shell (every
+  ambient credential included) wherever that output lands. Don't reconstruct env vars through
+  a command substitution piped into one of these builtins -- extract the one or two values
+  you actually need by name instead (see below), or write them to a file and `source` that.
+- **A `.env` file is not a shell script, even though `source`/`.` will happily try.** Bash
+  parses a sourced file as bash: a value with an unquoted space (`GPU_TYPE=NVIDIA A40`)
+  becomes two tokens, so bash sets `GPU_TYPE=NVIDIA` and then tries to *run* `A40` as a
+  command. A dotenv-parsing library (Python's `python-dotenv`, Node's `dotenv`) handles that
+  same line correctly; bash's `source` does not. So `set -a; source .env; set +a` is only
+  safe when every value in the file happens to be bash-safe -- that's a property of the
+  file's contents, not something the dotenv format guarantees. To run one command against
+  one or two vars from a `.env`, pull exactly those, by name, through the same parser your
+  code uses, and pass them by reference -- nothing reconstructed, nothing bare:
+  ```sh
+  RUNPOD_API_KEY=$(python3 -c "from dotenv import dotenv_values; print(dotenv_values('.env')['RUNPOD_API_KEY'])") \
+    runpodctl pod list
+  ```
 
 ## Receiving: redact before you look
 
@@ -89,15 +110,30 @@ Contain, disclose, rotate -- in that order, immediately, in the same turn you no
 4. **Fix the mechanism, not just the instance.** If a response echoed a secret back, redact
    that endpoint's response shape for every future call, not just retroactively for this one.
 
-## Real example
+## Real examples
 
-A cloud provider's pod-create API required `KAGGLE_KEY` and `RUNPOD_API_KEY` in the request
-body's `env` field -- correctly, since the pod needed them at runtime to authenticate its own
-teardown call. The input side followed the rules above: both values were sourced from a
-gitignored `.env` file by reference, never typed literally. But the create endpoint's
-response echoed the entire request back, `env` block included, and piping that response
-through a JSON pretty-printer for display put both plaintext credentials into the
-conversation transcript. The fix wasn't "be more careful that one time" -- it was adding
+**Receiving, unredacted.** A cloud provider's pod-create API required `KAGGLE_KEY` and
+`RUNPOD_API_KEY` in the request body's `env` field -- correctly, since the pod needed them at
+runtime to authenticate its own teardown call. The input side followed the rules above: both
+values were sourced from a gitignored `.env` file by reference, never typed literally. But the
+create endpoint's response echoed the entire request back, `env` block included, and piping
+that response through a JSON pretty-printer for display put both plaintext credentials into
+the conversation transcript. The fix wasn't "be more careful that one time" -- it was adding
 `redact_secrets.py` to this workflow permanently, so every future response from that endpoint
 (and any other) gets filtered before anyone looks at it, regardless of whether that specific
 call seems risky.
+
+**Sending, via a collapsed `export`.** Debugging why a RunPod pod-create call kept failing,
+the agent needed `RUNPOD_API_KEY` from a gitignored `.env` in a one-off shell command. The
+first attempt, `set -a; source .env; set +a; runpodctl ...`, broke because one `.env` value
+had an unquoted space (`RP_GPU_TYPE=NVIDIA A40`) -- bash's `source` split it into two tokens
+and tried to run `A40` as a command. Reaching for a fix, the agent tried to reconstruct the
+vars through `export $(python3 -c "..." | xargs ...)`; the inner command produced no output
+because of an unrelated bug, so the whole thing collapsed to bare `export` -- which dumped
+every exported variable in the shell, including an unrelated `NOTION_TOKEN`, straight into the
+conversation transcript. Neither failure was a missing awareness of "don't type secrets
+literally" -- the agent never did that. The actual gaps were (1) not knowing a dotenv file
+isn't safe to `source` as bash without checking its values are bash-safe, and (2) not knowing
+`export`/`env`/`set` with no arguments print the whole environment, which turns "my
+substitution produced nothing" from a no-op into a leak. Both are now covered above so the
+next agent doesn't have to independently rediscover them mid-incident.
