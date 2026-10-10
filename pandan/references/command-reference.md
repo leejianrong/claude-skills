@@ -19,7 +19,8 @@ Cards are the top-level verbs; `board`, `epic`, `label`, `view`, `template`, `de
 `comment` are nested groups. Columns are `todo`, `in_progress`, `done`. Story points are one of
 {1,2,3,5,8,13}. Priority is one of `none`/`low`/`medium`/`high`/`urgent`. Every command takes `--json`
 for machine-readable output you can pipe into `jq`; the human line for a card is
-`ticket  column  title  pts=N` (`pts=-` when unestimated).
+`ref  column  title  pts=N` (`pts=-` when unestimated). `ref` is the board-local `ENG-14`; the
+canonical `KAN-955` is `ticket_number`.
 
 ## JSON output shapes
 
@@ -34,18 +35,18 @@ differs per verb:
 | `activity` | `{"activity": [...]}` + `next_cursor` |
 | `board list` / `epic list` / `label list` / `view list` / `template list` / `comment list` / `cycle list` / `notify list` | `{"boards"}` / `{"epics"}` / `{"labels"}` / `{"views"}` / `{"templates"}` / `{"comments"}` / `{"cycles"}` / `{"notifications"}` |
 | `next`, `next --claim` | `{"card": {...}}` — `{"card": null}` when nothing is ready |
-| `batch-update` / `template apply` | `{"updated": [...]}` / `{"created": [...]}` |
+| `batch-update` / `batch-create` / `template apply` | `{"updated": [...]}` / `{"created": [...]}` / `{"created": [...]}` |
 | `dep add`/`rm`/`list` | `{"card_id", "blocked_by", "blocks"}` |
 | `link add`/`rm` | `{"card_id", "links"}` |
 | any `delete` | `{"deleted": <id>}` |
 | `warmup` | `{"status", "health"}` |
-| `get`, `create`, `update`, `move`, `needs-human`, `resolve`, `comment add`, `notify read`, and every `<group> create/update` | **bare entity object** — no envelope |
+| `get`, `create`, `update`, `move`, `claim`, `needs-human`, `resolve`, `comment add`, `notify read`, and every `<group> get/create/update` | **bare entity object** — no envelope |
 | `metrics`, `cycle metrics`, `config show` | **bare object** — no envelope |
 
 ```bash
-pandan list --json | jq -r '.cards[] | "\(.ticket_number)\t\(.title)"'   # NOT .[]
-pandan next --json | jq -r '.card.ticket_number // "none ready"'
-pandan get KAN-7 --json | jq -r .title                                   # single reads are BARE
+pandan list --json | jq -r '.cards[] | "\(.ref)\t\(.title)"'            # NOT .[]
+pandan next --json | jq -r '.card.ref // "none ready"'
+pandan get ENG-7 --json | jq -r .title                                   # single reads are BARE
 ```
 
 The envelope is load-bearing (`next_cursor` rides there, and a `summary` field is coming) — treat it
@@ -57,22 +58,24 @@ as the contract, not an accident.
 you want two or three extra columns rather than the whole record:
 
 ```bash
-pandan list --column todo --fields ticket,title,priority   # tab-separated, `-` for null
+pandan list --column todo --fields ref,title,priority   # tab-separated, `-` for null
 ```
 
-The vocabulary is that row's own `--json` keys plus the aliases `ticket` and `pts`/`points`; an unknown
+The vocabulary is that row's own `--json` keys plus the aliases `ticket` (canonical `ticket_number`,
+which is deliberately *not* the board-local ref) and `pts`/`points`; an unknown
 name is a clean error naming it. Omitting `--fields` leaves the default
-`ticket  column  title  pts=N` row byte-identical, and `--fields` **does not** affect `--json` (that's
+`ref  column  title  pts=N` row byte-identical, and `--fields` **does not** affect `--json` (that's
 already the full record). Not available on single-entity verbs like `get` — there it's a usage error,
 not a silent no-op. Don't confuse it with `--sort`, whose help line lists **`Sort keys:`**.
 
 ## Cards
 
 - `pandan list [--board N] [--column C] [--epic ID] [--priority P] [--label ID] [--assignee A] [--due-before ISO] [--overdue] [--needs-human] [--q TEXT] [--sort SPEC] [--limit N] [--json]`
-  — query/filter cards. `--q` is full-text search over title+description; `--sort` takes
+  — query/filter cards. `--q` is full-text search over title+description, plus an exact match when it is a ref
+  (`ENG-14`, `KAN-955`, `alice/ENG-14`); `--sort` takes
   comma-separated keys, `-` prefix = descending (e.g. `--sort -priority,position`). Large results
   paginate; the output includes a next-cursor to continue.
-- `pandan get <card_id> [--json]`
+- `pandan get <ref> [--json]` — a ref (`ENG-14`), canonical ticket, or numeric id.
 - `pandan create "<title>" [--board N] [--description D] [--column C] [--points N] [--assignee A] [--epic ID] [--priority P] [--due ISO] [--label ID ...] [--json]`
 - `pandan update <card_id> [--title T] [--description D] [--points N] [--assignee A] [--epic ID] [--priority P] [--due ISO] [--label ID ...] [--json]`
   — field edits only. It does **not** change the column; use `move` for that. `--label` replaces the
@@ -81,6 +84,13 @@ not a silent no-op. Don't confuse it with `--sort`, whose help line lists **`Sor
 - `pandan delete <card_id> --yes` — `--yes` is required as a guard.
 - `pandan batch-update '<JSON array of {id, ...fields}>'` (or `-` for stdin) — atomically PATCH several
   cards in one call (all-or-nothing).
+- `pandan batch-create '<JSON array of card objects>' [--board N]` (or `-` for stdin) — create several
+  cards in one invocation. **Fail-fast, not atomic**: cards created before a rejection stay created, so
+  re-run with the remainder. Fields use the API names (`title` required, then `description`/`column`/
+  `story_points`/`assignee`/`epic_id`/`priority`/`due_date`/`label_ids`/`board_id`); an object with no
+  `board_id` and no board selected is refused.
+- `pandan claim <ref> --assignee A` — claim a **chosen** card (move to `in_progress` + set assignee).
+  `next --claim` picks the card for you.
 
 ## Agent operating verbs
 
@@ -103,8 +113,12 @@ Nested groups:
 
 ## Boards, epics, labels, saved views, templates
 
-- `pandan board list [--json]` · `pandan board create "<name>" [--json]`
-- `pandan epic list [--board N] [--json]` · `pandan epic create "<name>" [--board N] [--description D] [--json]`
+- `pandan board list [--json]` (rows are `id  key  name`) · `pandan board get <id>` ·
+  `pandan board create "<name>"` · `pandan board update <id> [--name N] …` ·
+  `pandan board delete <id> --yes` (cards and epics cascade away)
+- `pandan board use <id|KEY>` · `pandan board use --clear` · `pandan board current` — pin the session's
+  board (see `SKILL.md`)
+- `pandan epic list [--board N] [--json]` · `pandan epic get <ref>` · `pandan epic create "<name>" [--board N] [--description D] [--json]`
 - `pandan epic update <epic_id> [--name N] [--description D] [--json]` · `pandan epic delete <epic_id> --yes [--json]`
 - `pandan label list [--board N] [--json]` · `pandan label create "<name>" [--color C] [--board N] [--json]` · `pandan label delete <label_id> --yes [--json]`
 - `pandan view list|create|delete …` — saved named filter/sort views.
@@ -132,7 +146,7 @@ Read-only, derived:
 The machine contract, V43/KAN-426.
 
 Exit codes: `0` success, `1` generic/runtime error, `2` usage (argparse rejected argv), `3`
-unauthorised (401), `4` forbidden (403), `5` not found (404). So a script tells "bad token" from
+unauthorised (401), `4` forbidden (403), `5` not found (404), `6` conflict (409). So a script tells "bad token" from
 "not your board" from "gone" without parsing text. The rule behind 1-vs-2: **argparse rejected argv →
 2; the CLI rejected a runtime value → 1.**
 
@@ -146,7 +160,7 @@ error	not_found	no card found with ticket KAN-999999	KAN-999999      # exit 5
 Tab-separated `error <code> <message> <arg>`, or under `--json` an
 `{"error": {code, message, arg, status, exit_code}}` object with all five keys always present. Branch
 on the stable `code` (`not_found`, `unauthorized`, `forbidden`, `config`, `unknown_field`,
-`confirmation_required`, `invalid_ref`, `transport`, …), never on message text. Human `usage:` text
+`confirmation_required`, `invalid_ref`, `ambiguous_ref`, `board_required`, `transport`, …), never on message text. Human `usage:` text
 still goes to stderr.
 
 **A card that doesn't exist reports the same code however you addressed it** — `pandan get 999999` and
