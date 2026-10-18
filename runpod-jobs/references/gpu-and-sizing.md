@@ -45,6 +45,14 @@ whose VRAM fits the model; oversizing VRAM you don't use is wasted money.
 
 - **RAM** ≥ the model's peak resident set, plus headroom (CPU: pick the tier; GPU: watch VRAM).
 - **`containerDiskInGb`** ≥ image size + scratch. Ephemeral, freed on terminate.
+  `kaggle datasets download --unzip` keeps **both** the downloaded `.zip` and the extracted files
+  (it does not delete the zip after extracting), so a dataset counts roughly **2x its listed size**
+  against container disk, not 1x — a 35.9GB + 5.1GB pair of datasets needs ~82GB for that step
+  alone, before the image, apt packages (e.g. `cuda-toolkit-12-8` is several GB), and an installed
+  venv. `containerDiskInGb: 60` failed with `OSError: [Errno 28] No space left on device`
+  mid-download for exactly this pair (2026-09-21, solve-arc-agi-3/ARC-40); `220` succeeded. When
+  sizing for any `--unzip` download, budget 2x the dataset total plus normal image/venv overhead,
+  not the dataset's listed size.
 - **`volumeInGb`** = 0 unless you need persistence across pods (then it bills while it exists).
 - **`RP_MAX_LIFETIME_SECS`** above the whole job's expected wall-clock — training is hours, so
   raise it well past the default, or the dead-man's-switch reaps mid-run.
