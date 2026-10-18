@@ -11,3 +11,6 @@ Thumbs.db
 *.key
 .mcp.json
 .credentials.json
+
+# Machine-generated cache of built-in skills synced by the harness; not part of this library
+synced/
