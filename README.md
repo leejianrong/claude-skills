@@ -62,6 +62,7 @@ dev-playbook/
 | `pandan` | Read and write the Pandan kanban board via the `pandan` CLI. |
 | `plan-new-project` | Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one interview. |
 | `readme-playbook` | Write or audit a project README: audience-first structure, anti-patterns, what changes by project type. |
+| `software-docs-writer` | Write or audit technical docs (tutorials, how-tos, reference, explanation) using Diátaxis and the page-level craft of the FastAPI, Typer and React docs, with a style pass and a checker script. |
 | `traefik-dev-proxy` | Set up one machine-wide Traefik reverse proxy that auto-discovers Docker Compose dev stacks via labels, giving every project a stable `<project>.localhost` hostname. |
 | `video-demo` | Record a 10-30s MP4 showcase video of a CLI or web app for a GitHub README — agent-scripted capture (VHS/Playwright), bundled music + cued SFX, no voiceover. |
 | `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
