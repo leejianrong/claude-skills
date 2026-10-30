@@ -48,8 +48,11 @@ def check_file(path: Path):
         for target in LINK.findall(re.sub(r"`[^`]*`", "", line)):
             if re.match(r"^(https?:|mailto:|#)", target):
                 continue
-            rel = target.split("#")[0]
-            if rel and not (path.parent / rel).exists():
+            rel = target.split("#")[0].split("?")[0]
+            # Only links to source files can be verified. Root-absolute and
+            # extensionless (directory-style) links are resolved by the site
+            # generator, so checking them here would give false errors.
+            if rel and not rel.startswith("/") and Path(rel).suffix and not (path.parent / rel).exists():
                 errors.append((n, f"broken relative link: {target}"))
         if line.lstrip().startswith("|") or line.lstrip().startswith(">"):
             continue

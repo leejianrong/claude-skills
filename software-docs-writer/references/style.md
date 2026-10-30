@@ -59,8 +59,8 @@ clarity, clarity wins; deviate consistently.
 - Descriptive link text (`see the [deployment guide](/docs/deploy/)`), never "click here" or a
   bare "here".
 - Link the first meaningful mention of a concept, not every mention.
-- Relative links for pages in the same docs, so they survive a domain change and the
-  checker can verify them.
+- Relative links between pages in the same docs, so they survive a domain change. Links to
+  source files (`page.md`) can also be verified by the checker script.
 - Avoid positional references ("above", "below", "as shown earlier") that break when the
   page is reordered or read out of context by a search result or an agent. Name the
   section instead.
