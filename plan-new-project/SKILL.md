@@ -254,6 +254,6 @@ Planning skills fail by producing volume.
 `SLICES.md` is the build handoff. Both optional next steps come from existing
 skills:
 
-- `/pandan-pm` (or the `pandan` CLI directly) to publish the slices to the
+- `/pandan` (the `pandan` CLI) to publish the slices to the
   Pandan board, one epic per slice
 - `/dev-playbook` for test layering, quality gates and CI on the way in
