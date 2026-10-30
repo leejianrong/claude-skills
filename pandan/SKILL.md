@@ -6,8 +6,7 @@ description: >-
   is to look at, create, update, move, or organise cards/epics/boards on Pandan (the board at
   simple-kanban-jian.fly.dev or a self-hosted instance): "add a card", "what's on the board", "move
   ENG-12 to done", "list my epics", "find card ENG-14", "which board am I on", "write up these
-  stories", "break this into an epic", "track this work on kanban". For orchestrating a whole backlog as
-  a scrum-master, see the pandan-pm skill; this skill is the tool reference it builds on.
+  stories", "break this into an epic", "track this work on kanban".
 ---
 
 # Driving Pandan with the `pandan` CLI
