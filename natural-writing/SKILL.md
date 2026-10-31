@@ -1,6 +1,6 @@
 ---
 name: natural-writing
-description: Write prose that reads like a human wrote it, not an LLM. Use whenever drafting or editing articles, blog posts, docs, or any narrative prose for this project, especially the Tech Blog Pipeline articles. Covers the real AI tells (uniform sentence rhythm, hedging, "not just X but Y", stock vocabulary, em-dash overuse, title-case headings) and how to fix them.
+description: Write prose that reads like a human wrote it, not an LLM. Use whenever drafting or editing articles, blog posts, docs, or any narrative prose for this project, especially the Tech Blog Pipeline articles, and when an agent writes its own replies, summaries, or PR text. Covers the real AI tells (uniform sentence rhythm, hedging, "not just X but Y", stock vocabulary, em-dash overuse, title-case headings) and how to fix them.
 ---
 
 # Natural writing
@@ -71,14 +71,40 @@ and stop when you're done.
 Delete them, or swap in a concrete detail that earns the emphasis.
 
 **Em-dashes.** Don't use them (—). They're a strong tell here, so set off asides
-another way: rotate through commas, parentheses, a colon, or a full stop and a fresh
-sentence. The ban is only on the em-dash; the plain hyphen "-" is fine (compounds
+another way: rotate through commas, parentheses, or a full stop and a fresh sentence. Keep
+colons for introducing a list or an example, not for joining two clauses. The ban is only on the em-dash; the plain hyphen "-" is fine (compounds
 like "event-driven," ranges like "18-24 words").
 
 **Formatting.** Use sentence case for headings, not Title Case ("Designing resilient
 services," not "Designing Resilient Services"). Don't over-bullet: if ideas connect,
 write a paragraph. Don't bold every other phrase; when emphasis is everywhere it
 means nothing.
+
+**More tells worth hunting.**
+
+- Tacked-on "-ing" clauses ("highlighting its importance", "fostering collaboration"). Delete
+  them or replace them with a real fact.
+- Inflated verbs of being: "serves as", "boasts", "stands as". Write "is" or "has".
+- Synonym cycling. Pick one term for a thing and repeat it; three names for one operation
+  make a reader wonder whether they differ.
+- False ranges ("from X to Y") where the endpoints aren't on a real scale. List the topics.
+- Unnamed authority: "experts believe", "studies show". Name the source or cut the claim.
+- Abstract metaphor nouns: substrate, bedrock, north star, flywheel, paradigm. Use the
+  concrete word (base, goal).
+- Mannered prose: aphorisms, rhetorical fragments, personified code ("the function wants
+  to..."), figurative verbs. Say the literal thing.
+- Feelings instead of mechanisms ("feels seamless"). Say what it does, with a number or an
+  instruction. If the sentence would fit any project unchanged, cut it.
+- Chatbot filler and sycophancy: "Certainly!", "Great question", "I hope this helps".
+- Filler phrases: "in order to" (to), "due to the fact that" (because), "it is important to
+  note that" (delete).
+- Piles of qualifiers. One "may" does the job of four hedges.
+- Unneeded passive voice and adverbs. Name the actor, and prefer a stronger verb or a
+  measured number to "significantly".
+- Decorative emojis in headings or bullets, curly quotes, bold on every proper noun.
+- Over-compression: dropped articles, arrows standing in for verbs, unexplained
+  abbreviations. Write whole sentences.
+- Dense sentences. One idea each; split if it carries two.
 
 ## Write like you know things
 
@@ -98,6 +124,24 @@ argues. It says "most teams reach for Kafka here and regret it," then earns the
 claim. Own the trade-offs. A reader should finish knowing what *you* think, not just
 what the options were.
 
+## When an agent writes its own text
+
+Replies, status updates, summaries, and PR descriptions are prose too, and they are where
+machine texture builds up fastest.
+
+- **Lead with the answer.** State the result or the decision first, then the support. No
+  restating the question, no recap of what you just did, no "Let me know if...".
+- **Short declarative sentences.** One fact each. Cut transitions that only announce what
+  comes next.
+- **Label how sure you are.** Mark a claim as measured (you ran it), inferred (you read the
+  code and reasoned), or a guess. A reader should never have to wonder which one it was.
+- **Never invent links, citations, file paths, or numbers.** If you haven't opened it or run
+  it, say so or leave it out.
+- **Restate on request.** If the user asks "what?" or says they lost the thread, say the same
+  thing again in plain words with less jargon and shorter sentences, not a longer version.
+- **Use the real names** from the code (symbols, files, flags, commands) rather than
+  synonyms or invented jargon.
+
 ## Revision checklist
 
 Before you call any draft done:
@@ -106,7 +150,7 @@ Before you call any draft done:
 2. Check the rhythm. Three sentences in a row at the same length? Break one, merge two.
 3. Hunt the tells from the section above. Search the draft for "not just," "isn't
    just," "delve," "leverage," "seamless," "robust," "in conclusion," "it's worth
-   noting," and any em-dash. Fix every hit.
+   noting," "serves as," "I hope this helps," and any em-dash. Fix every hit.
 4. Cut 10%. Almost every draft is padded: the qualifiers, the throat-clearing, the
    sentence that just restates the one before it.
 5. Check the surface. Headings in sentence case, lists that aren't smuggling prose,
