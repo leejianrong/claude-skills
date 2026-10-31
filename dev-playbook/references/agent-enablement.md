@@ -58,6 +58,32 @@ symptom, a tool that needs a restart to pick up config, a deploy quirk — recor
 durable (the brief, a decision log, or a persistent memory). The second session shouldn't
 rediscover the first session's traps.
 
+## Encode repeated lessons in structure
+
+When you write the same instruction a second time, or keep making the same correction, more
+prose is the wrong fix. Encode the rule as something that fails on its own: a lint rule, a
+type, a runtime check, a test, or a script. The instruction in the brief is the symptom.
+
+Order of preference, strongest first:
+
+1. A check that fails the build (lint, type, CI job).
+2. A runtime check or a script the agent runs.
+3. A line in the brief with an example of the failure it prevents.
+
+Only fall back to prose when the rule needs judgment and can't be mechanised. In that case
+make it prominent and show the failure mode, not just the rule.
+
+## A project-local verification skill
+
+For an app that agents change often, write a small skill inside the repo that proves the app
+works: how to start it, the commands or requests that exercise each feature, and what a
+correct result looks like. Keep a feature map in it (feature, how to exercise it, expected
+result). When a feature changes, update the map in the same PR, or the skill drifts and
+agents verify against a stale picture.
+
+The verification skill is what turns "prove it works" from advice into a command an agent can
+run. See `verifying-claims.md`.
+
 ## Orchestrating many agents
 
 For larger efforts, one agent can act as a coordinator: read the work list, delegate each

@@ -48,8 +48,10 @@ Each principle names the practice and the smell that means it's missing. Depth l
    with no code change — that's a race, not luck, and it will erode trust in the whole gate.*
 
 4. **Every bug and flake becomes a test.** Reproduce it in a failing test first, then fix.
-   A fixed bug without a test is a bug waiting to come back. *Smell: the same regression
-   twice.*
+   A fixed bug without a test is a bug waiting to come back. Assert behavior a caller can
+   observe, not internals, so the test survives a refactor. *Smell: the same regression
+   twice, or a test that breaks every time the internals change.* See
+   `references/layered-testing.md`.
 
 5. **Prove a guard by watching it fail.** A test that passes says nothing about a
    compatibility promise or a safety check until you have seen it go red: temporarily break
@@ -98,7 +100,8 @@ Each principle names the practice and the smell that means it's missing. Depth l
 12. **Review for correctness before merging, adversarially.** A reviewer (human or agent)
     reads the diff to break it, not to approve it. Prefer a public seam over a private reach;
     reject a known wart rather than merge it. Security-sensitive diffs get a security pass
-    (see below).
+    (see below). Green CI is not proof a change is safe to land: re-verify the real behavior
+    against the merged result before merging. See `references/verifying-claims.md`.
 
 ### Security and supply chain
 
@@ -132,6 +135,12 @@ Each principle names the practice and the smell that means it's missing. Depth l
     pick a free port itself instead of hardcoding one. See
     `references/local-dev-ergonomics.md`. *Smell: bare `make` launches a server, or the
     one-command entry point fails because its port is taken.*
+
+18. **Prove a claim against the real artifact before reporting it.** Check the running
+    thing, not a proxy like "it compiled" or the agent's own summary. A performance number
+    gets seven checks (profiled limiter, tuned baseline, errors counted, repeated runs) before
+    it goes in a PR. See `references/verifying-claims.md`. *Smell: "2x faster" with one run and
+    no named bottleneck.*
 
 ## Checklist A — adopt in a new project
 
