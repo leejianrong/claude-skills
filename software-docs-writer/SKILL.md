@@ -1,6 +1,6 @@
 ---
 name: software-docs-writer
-description: Write, restructure, or review the content of technical documentation for a software project (library, CLI, framework, API, service), the way the FastAPI, Typer, and React docs do it. Picks the right page type (tutorial, how-to guide, reference, explanation), applies page-level craft (runnable full-file examples, shown output, check-it steps, callouts), and runs a style and consistency pass. Use when asked to write or improve a getting-started guide, tutorial, user guide, API or CLI reference, concept page, or "docs for this library", when docs feel confusing, bloated, or like one page doing four jobs, or when auditing docs for quality. For READMEs use readme-playbook, for docs site tooling and CI use dev-playbook, for prose tells use natural-writing.
+description: Write, restructure, or review the content of technical documentation for a software project (library, CLI, framework, API, service), the way the FastAPI, Typer, and React docs do it. Picks the right page type (tutorial, how-to guide, reference, explanation), applies page-level craft (runnable full-file examples, shown output, check-it steps, callouts), and runs a style and consistency pass. Use when asked to write or improve a getting-started guide, tutorial, user guide, API or CLI reference, concept page, or "docs for this library", when docs feel confusing, bloated, or like one page doing four jobs, or when auditing docs for quality. Also covers PR descriptions and commit messages. For READMEs use readme-playbook, for docs site tooling and CI use dev-playbook, for prose tells use natural-writing.
 ---
 
 # Software docs writer
@@ -74,6 +74,8 @@ Read `references/craft-patterns.md` before drafting any tutorial or how-to.
   the four page types. Read at step 4.
 - `references/craft-patterns.md`: page-level techniques with the docs they come from,
   plus code-example rules. Read before drafting tutorials and how-tos.
+- `references/pr-and-commit-text.md`: commit, PR title, and PR body standard. Read when
+  writing or reviewing a PR description or commit message.
 - `references/style.md`: the style rules worth enforcing (voice, headings, lists, links,
   terminology table, accessibility). Read at step 7.
 
