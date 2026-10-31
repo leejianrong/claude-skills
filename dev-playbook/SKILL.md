@@ -128,19 +128,10 @@ Each principle names the practice and the smell that means it's missing. Depth l
 17. **Make it observable, and runnable in one command.** You can't call it shipped if you
     can't see it running: a health endpoint, structured logs, and minimal metrics or error
     tracking. And a single command (a `Makefile`/`Taskfile` target) that brings the whole
-    stack up locally — the first thing a newcomer or agent runs. *Smell: bare `make` launches
-    a server, runs a build, or does anything other than list what's available. A Makefile's
-    first-defined target is what `make` with no arguments runs, so an unrelated target like
-    `preview` or `build` sitting first turns a no-argument invocation into an accidental
-    blocking action instead of a menu. Fix: put a `help` target first (or set
-    `.DEFAULT_GOAL := help`) that lists every other target with a one-line description —
-    grepping `## `-suffixed comments and printing them is the common pattern. That's what a
-    bare `make` should always show.* *Smell: the one-command entry point hardcodes a port and
-    fails when it's taken. On a personal machine running several projects side by side, a
-    fixed default port (`8080`, `3000`, ...) collides often, and the fix isn't remembering to
-    pass a different `PORT=` every time — it's having the command bind-test and auto-increment
-    to the next free port itself, and print which port it landed on. Pure-stdlib (e.g. a
-    `socket.bind` loop) avoids depending on `lsof`/`nc` being installed.*
+    stack up locally. Bare `make` should list targets, not run one, and the command should
+    pick a free port itself instead of hardcoding one. See
+    `references/local-dev-ergonomics.md`. *Smell: bare `make` launches a server, or the
+    one-command entry point fails because its port is taken.*
 
 ## Checklist A — adopt in a new project
 

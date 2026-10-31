@@ -51,22 +51,57 @@ dev-playbook/
 
 ### Mine
 
+**Engineering practice**
+
 | Skill | What it does |
 | --- | --- |
 | `agent-brief` | Write, trim, or audit a CLAUDE.md/AGENTS.md file: the discoverability filter, size discipline, and when to add a rule. |
-| `airgap-image-transfer` | Move OCI/Docker images to an airgapped machine with skopeo/regctl, avoiding `docker save`'s dropped layers. |
+| `cleanup` | Audit and safely clean Docker, stale git branches and worktrees, and other dev clutter, plus the habits that stop it piling up. |
 | `dev-playbook` | Project-agnostic engineering practices — layered testing, quality gates, branch/PR discipline, secrets hygiene, docs-as-code. |
-| `explainer-artifacts` | Build diagram-led explainer artifacts for teaching a concept or supporting a decision. |
 | `go-playbook` | The Go specifics `dev-playbook` leaves as "translate to your stack": `-race`, the test cache, build tags, CGo versus a single binary, boundary enforcement, plus a copyable Makefile and CI. |
+| `handling-secrets` | Keep API keys, tokens, and passwords out of transcripts, logs, git history, and files. |
+
+**Writing and docs**
+
+| Skill | What it does |
+| --- | --- |
 | `natural-writing` | Write prose that doesn't read like an LLM wrote it. |
-| `pandan` | Read and write the Pandan kanban board via the `pandan` CLI. |
-| `plan-new-project` | Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one interview. |
 | `readme-playbook` | Write or audit a project README: audience-first structure, anti-patterns, what changes by project type. |
 | `software-docs-writer` | Write or audit technical docs (tutorials, how-tos, reference, explanation) using Diátaxis and the page-level craft of the FastAPI, Typer and React docs, with a style pass and a checker script. |
-| `traefik-dev-proxy` | Set up one machine-wide Traefik reverse proxy that auto-discovers Docker Compose dev stacks via labels, giving every project a stable `<project>.localhost` hostname. |
-| `video-demo` | Record a 10-30s MP4 showcase video of a CLI or web app for a GitHub README — agent-scripted capture (VHS/Playwright), bundled music + cued SFX, no voiceover. |
-| `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
 | `write-tech-blog-post` | Draft a publishable technical blog post in my voice and get it to Notion. |
+
+**Planning and product**
+
+| Skill | What it does |
+| --- | --- |
+| `pandan` | Read and write the Pandan kanban board via the `pandan` CLI. |
+| `plan-new-project` | Turn a rough idea into a PRD-grade plan, ADRs and implementation slices in one interview. |
+| `software-product-director` | Critique a repo's commercial and product viability from its actual codebase. |
+
+**Infrastructure and ops**
+
+| Skill | What it does |
+| --- | --- |
+| `airgap-image-transfer` | Move OCI/Docker images to an airgapped machine with skopeo/regctl, avoiding `docker save`'s dropped layers. |
+| `runpod-jobs` | Rent a RunPod pod, run a job, get the artifact out, and guarantee teardown so it stops billing. |
+| `traefik-dev-proxy` | Set up one machine-wide Traefik reverse proxy that auto-discovers Docker Compose dev stacks via labels, giving every project a stable `<project>.localhost` hostname. |
+
+**Design and media**
+
+| Skill | What it does |
+| --- | --- |
+| `explainer-artifacts` | Build diagram-led explainer artifacts for teaching a concept or supporting a decision. |
+| `material-design-3` | Apply Google's Material Design 3 system when building or restyling a frontend. |
+| `video-demo` | Record a 10-30s MP4 showcase video of a CLI or web app for a GitHub README — agent-scripted capture (VHS/Playwright), bundled music + cued SFX, no voiceover. |
+
+**Meta**
+
+| Skill | What it does |
+| --- | --- |
+| `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
+
+Skills stay flat at the top level because the harness only discovers top-level
+directories. The grouping above is for reading, not for the filesystem.
 
 ### Vendored from upstream
 
