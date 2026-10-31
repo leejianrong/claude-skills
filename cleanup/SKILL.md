@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: Audit and clean up development leftovers safely — Docker containers/volumes/images/build cache and restart policies, stale local and remote git branches, old git worktrees, plus other accumulated clutter (node_modules, caches, temp files, background processes, rented cloud resources). Also sets the habits that stop clutter from accumulating, for agents and teams. Use when the user says cleanup, clean up, tidy, prune, free disk space, "what's still running", "spin down", "old branches", "stale worktrees", "containers keep restarting", or at the end of a task that started containers, worktrees, branches or pods.
+description: Audit and clean up development leftovers safely — Docker containers/volumes/images/build cache and restart policies, stale local and remote git branches, old git worktrees, plus other accumulated clutter (node_modules, caches, temp files, background processes, rented cloud resources). Also sets the habits that stop clutter from accumulating, for agents and teams. Use when the user says cleanup, clean up, tidy, prune, free disk space, "what's still running", "spin down", "old branches", "stale worktrees", "containers keep restarting", at the end of a task that started containers, worktrees, branches or pods, or when asked to pause unfinished work so it can resume.
 ---
 
 # Cleanup
@@ -34,6 +34,7 @@ before `-D`, `git worktree remove` (refuses dirty trees) before `--force`.
 | Docker: containers, restart policies, volumes, images, build cache, WSL autostart | [references/docker.md](references/docker.md) |
 | Git: stale local/remote branches, old worktrees, merged PRs | [references/git-branches-worktrees.md](references/git-branches-worktrees.md) |
 | Everything else: dependency dirs, caches, temp files, processes, cloud resources, team habits | [references/other-clutter-and-habits.md](references/other-clutter-and-habits.md) |
+| Pausing unfinished work cleanly, and leaving a decision trail for a long run | [references/pausing-and-decision-trail.md](references/pausing-and-decision-trail.md) |
 
 Read only the reference that matches the request. For a general "clean up my machine/repo",
 run the quick audit below first, then open the relevant references.

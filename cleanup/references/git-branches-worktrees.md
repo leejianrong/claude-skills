@@ -90,6 +90,20 @@ git -C <path> log @{u}..HEAD --oneline # unpushed commits? (non-empty = keep and
 git -C <path> branch --show-current    # and is that branch merged? (see local branches)
 ```
 
+Classify uncommitted files before deciding:
+
+- **Tracked files with edits** (`M` in `status`): real work. Show the diff and get a decision
+  first. Deleting uncommitted work is unrecoverable.
+- **Untracked throwaway files** (build output, scratch notes): safe to drop, but list them by
+  name first so the user can object.
+
+Also check whether the worktree is **in use right now**. Take the paths from
+`git worktree list`, never from memory, so worktrees in unexpected places aren't missed. A
+worktree can belong to another agent session, including one running background subagents that
+use sibling worktrees under names you never see in a session list. If the user has active or
+pinned sessions, cross-check each candidate against them. A script's "safe" label never
+overrides that check.
+
 Remove only when the tree is clean, nothing is unpushed, and its branch is merged or abandoned
 with the user's OK:
 
@@ -106,6 +120,9 @@ stacks/volumes created per worktree (project names derived from the directory â€
 A directory deleted by hand leaves a stale registration; `git worktree prune` fixes that.
 A locked worktree (`git worktree list` shows `locked`) needs `git worktree unlock` first â€” ask
 before doing so, since it was locked on purpose.
+
+After removing, report: free disk (`df -h /`) before and after, the worktrees removed, and a
+one-line reason for each one kept (the uncommitted work, or the session using it).
 
 ## Prevention
 
