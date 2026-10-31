@@ -97,3 +97,24 @@ overwrite the working tree from the **index**, silently discarding uncommitted c
 file — and unstaged work never entered the object database, so no reflog or `fsck` can bring it
 back. Safe options, cheapest first: commit (or `git stash push -- <file>`) before mutating; edit
 a copy; or apply the mutation as a patch and reverse exactly it with `git apply -R`.
+
+## Test behavior, not implementation
+
+Assert what a caller can observe through the interface it uses: return values, errors,
+readable state, and external effects such as requests sent or rows written. Private helpers,
+internal call order, and intermediate data are not behavior, so tests should not pin them.
+
+Check each test against two hypothetical edits:
+
+- Break the behavior, and the test should fail.
+- Change the internals but keep the results the same, and the test should still pass.
+
+A test that fails the second check is a cost, not a guard. Rewrite it or delete it.
+
+- Drive the code through its public interface with concrete inputs. Derive expected values
+  from the requirement, not by running the code and copying the output.
+- Assert the exact answer when one exists (an empty list when nothing matches). Assert the
+  error type callers branch on, not the exact message wording.
+- When the contract is "never do X in case Y" (an empty cart never charges), also test a case
+  where X does happen, so the assertion is shown to be able to fail.
+- Invariants count as behavior, for example a key that must exist in two tables.
