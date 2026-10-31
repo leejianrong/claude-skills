@@ -60,6 +60,7 @@ dev-playbook/
 | `dev-playbook` | Project-agnostic engineering practices — layered testing, quality gates, branch/PR discipline, secrets hygiene, docs-as-code. |
 | `go-playbook` | The Go specifics `dev-playbook` leaves as "translate to your stack": `-race`, the test cache, build tags, CGo versus a single binary, boundary enforcement, plus a copyable Makefile and CI. |
 | `handling-secrets` | Keep API keys, tokens, and passwords out of transcripts, logs, git history, and files. |
+| `lean-code` | Keep feature work small: read before adding, smallest diff, delete what the change supersedes, comments only for the non-obvious why, and a diff audit before the PR. Fires on any feature work. |
 
 **Writing and docs**
 
@@ -99,6 +100,10 @@ dev-playbook/
 | Skill | What it does |
 | --- | --- |
 | `write-skill` | Author or audit a SKILL.md for Claude Code or other agent harnesses. |
+
+`lean-code`, and parts of `dev-playbook`, `natural-writing`, `software-docs-writer` and `cleanup`,
+are adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan
+(MIT licence), rewritten for this library.
 
 Skills stay flat at the top level because the harness only discovers top-level
 directories. The grouping above is for reading, not for the filesystem.
