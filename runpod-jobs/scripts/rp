@@ -71,7 +71,7 @@ rp_api() {
   # termination call, the one thing that must be unconditional (seen 2026-09-27, killed by hand).
   # 30s is generous: pod list/create/delete/status normally answer in well under that.
   local method="$1" path="$2" body="${3:-}"
-  local args=(--silent --show-error --fail-with-body --connect-timeout 10 --max-time 30 -X "$1")
+  local args=(--silent --show-error --fail-with-body --connect-timeout 10 --max-time 30 -X "$method")
   [ -n "$body" ] && args+=(-H 'content-type: application/json' --data-binary "$body")
   printf 'header = "Authorization: Bearer %s"\n' "$RUNPOD_API_KEY" | curl "${args[@]}" -K - "${API_BASE}${path}"
 }
