@@ -1,10 +1,20 @@
 ---
 name: frontend-design
-description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, design tokens, and making choices that don't read as templated defaults, then verifies the result in a browser. Use when building or restyling a web page, component, dashboard or app screen, or when the user asks for a design, mockup, theme, or UI polish.
 license: Complete terms in LICENSE.txt
 ---
 
 # Frontend Design
+
+## First: new design or existing one?
+
+Look for existing tokens, a component library and a `DESIGN.md` (check `package.json`, the
+Tailwind or CSS variables file, and the components folder). If the project has them, extend
+them: reuse components and tokens, match the existing look, and skip the aesthetic risk below.
+The rest of this skill then applies to craft, copy, and verification, not to choosing a new
+identity. If there is none, run the full process.
+
+For landing pages, use the `landing-page` skill if it is available; it builds on this one.
 
 Approach this as the design lead at a small studio known for giving every client a visual identity that could not be mistaken for anyone else's. This client has already rejected proposals that felt templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take one real aesthetic risk you can justify.
 
@@ -38,11 +48,13 @@ Then review that plan against the brief before building: if any part of it reads
 
 When writing the code, be careful of structuring your CSS selector specificities. It's easy to generate CSS classes that cancel each other out (especially with a type-based selector like .section and a element-based selector like .cta). This can happen often with paddings/margins between sections.
 
+Turn the plan into tokens before writing components: see `references/tokens.md` for the role schema, the CSS and Tailwind v4 wiring, and the `DESIGN.md` template. If the brief asks for Material or M3, use the `material-design-3` skill instead.
+
 Try to do a lot of this planning and iteration in your thinking, and only show ideas to the user when you have higher confidence it'll delight them.
 
 ## Restraint and self-critique
 
-Spend your boldness in one place. Let the signature element be the one memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Not taking a risk can be a risk itself! Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected. Critique your own work as you build, taking screenshots if your environment supports it – a picture is worth 1000 tokens. Consider Chanel's advice: before leaving the house, take a look in the mirror and remove one accessory. Human creators have memory and always try to do something new, so if you have a space to quickly jot down notes about what you've tried, it can help you in future passes.
+Spend your boldness in one place. Let the signature element be the one memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Not taking a risk can be a risk itself! Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected. Critique your own work as you build, and check it in a browser before calling it done: `references/verify.md` has the checks and the polish order. Consider Chanel's advice: before leaving the house, take a look in the mirror and remove one accessory. Human creators have memory and always try to do something new, so if you have a space to quickly jot down notes about what you've tried, it can help you in future passes.
 
 ## More on writing in design
 
