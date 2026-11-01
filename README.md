@@ -92,6 +92,7 @@ dev-playbook/
 | Skill | What it does |
 | --- | --- |
 | `explainer-artifacts` | Build diagram-led explainer artifacts for teaching a concept or supporting a decision. |
+| `landing-page` | Build or audit a landing page with a coding agent: brief, copy, structure, art direction, browser verification and launch gates. Builds on `frontend-design`. |
 | `material-design-3` | Apply Google's Material Design 3 system when building or restyling a frontend. |
 | `video-demo` | Record a 10-30s MP4 showcase video of a CLI or web app for a GitHub README — agent-scripted capture (VHS/Playwright), bundled music + cued SFX, no voiceover. |
 
