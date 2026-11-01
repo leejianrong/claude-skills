@@ -4,6 +4,16 @@ The goal is a test suite you actually run. That means the checks you run constan
 and need nothing installed, and the slow, high-fidelity checks are quarantined where their
 cost is paid once, in CI.
 
+## Contents
+- The layers
+- Build for testability: dependency-injection seams
+- Integration tests with containerized infra
+- End-to-end that boots its own stack
+- Determinism: kill the races
+- Every fix gets a test
+- Prove a guard by watching it fail
+- Test behavior, not implementation
+
 ## The layers
 
 Sort tests into tiers by what they need to run:
