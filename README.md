@@ -117,7 +117,12 @@ its licence before reusing.
 | Skill | Source | Path upstream |
 | --- | --- | --- |
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | `skills/find-skills/` |
-| `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) | `skills/frontend-design/` (LICENSE.txt included) |
 
 To pull an upstream fix, copy the updated directory in and open a PR — there is
 no lock file or updater in play anymore.
+
+`frontend-design` started as a verbatim copy of
+[anthropics/skills](https://github.com/anthropics/skills) (`skills/frontend-design/`,
+LICENSE.txt included) and has since been extended locally (`references/tokens.md`,
+`references/verify.md`, existing-design-system mode). Merge upstream changes by hand
+rather than overwriting the directory.
