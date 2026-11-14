@@ -88,6 +88,23 @@ what's in it re-exposes exactly what you were just careful about sending.
 - When genuinely unsure whether a field is sensitive, redact it. Under-redacting once costs a
   real leak; over-redacting once costs a re-run of one command.
 
+## Looking at a credential file: don't (a third leak direction)
+
+Sending and receiving are not the only ways out: **displaying the file that holds the secret** is one
+too, and it is the easiest to rationalise ("I just want to see its shape"). Never `cat`, `sed`, `head`
+or "mask-and-print" a file such as `~/.runpod/config.toml`, `~/.kaggle/*`, `~/.aws/credentials`,
+`~/.ssh/id_*`, `.env`, `~/.netrc`. A mask is a **deny-list** and fails open on any format you did not
+anticipate (2026-11-07: a mask for double-quoted values printed a RunPod key from a single-quoted TOML
+file). Use an **allow-list** instead:
+
+- To learn the shape: print **key names or lengths only** (`grep -o '^[A-Za-z_]*' f`, or
+  `python3 -c "import tomllib;print(list(tomllib.load(open(P,'rb'))))"`).
+- To use a value: extract that one value by name **inside a subprocess** and pass it by reference
+  (`VAR=$(python3 -c ...) cmd`); prefer the tool's own CLI, which reads its own config.
+- A global PreToolUse hook (`~/.claude/hooks/secrets-guard.py`) blocks the common display/copy forms of
+  these reads, bare `env`/`printenv`/`export`, and `echo $TOKEN`. It is a backstop with known gaps, not
+  permission to be careless; if it blocks you, change approach rather than hunting for a bypass.
+
 ## Cleanup
 
 - Delete any local file that held a plaintext secret (request bodies, curl config files,

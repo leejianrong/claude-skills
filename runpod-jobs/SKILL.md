@@ -36,7 +36,12 @@ your machine. Use all three layers, every time:
 - [ ] An account spend cap is set in the console.
 - [ ] The launch command bakes the dead-man's-switch (max-lifetime **and** idle watchdog).
 - [ ] The driver traps EXIT/INT/TERM and terminates the pod.
-- [ ] After the run, `runpodctl pod list` shows the pod **gone** (account at `$0` idle).
+- [ ] Before launching, you listed the account's existing pods (field-selected, see Secrets). Other
+      projects may have pods running on the same account; **never delete a pod this job did not create**
+      (`rp` names its pod `rp-job`).
+- [ ] After the run, `runpodctl pod list` no longer shows **your** pod. (An empty list means "account at
+      `$0` idle" only when you know nothing else of the owner's is running; on 2026-11-07 two unrelated pods
+      were, and they were not ours to delete.)
 
 `scripts/rp` does layers 2 and 3 for you and verifies layer 4. Prefer it over hand-rolling
 teardown — the dead-man's-switch is fiddly to get right and expensive to get wrong.
@@ -56,6 +61,9 @@ embedding its **content** directly into `dockerStartCmd` (read the file, JSON-en
 `bash -lc "<contents>"` argument) rather than fetching it at boot — or if a fetch is
 unavoidable, wrap only that fetch in its own `timeout Ns` with a fallback `terminate` on failure,
 so a hang can't silently swallow every later safety layer.
+
+**Every job script needs observability, not only teardown.** Stage markers, a heartbeat, per-step
+timeouts and PID-based waits are in `references/observability.md`; skipping them cost real runs.
 
 ## The 60-second happy path
 
@@ -155,6 +163,32 @@ it to `curl` via a config file on **stdin** (`curl -K -`, never in `argv`/a URL)
 `runpodctl` via the environment (`RUNPOD_API_KEY=… runpodctl …`, by reference). Use a dedicated,
 limited-scope, revocable key — not your account-wide one. `scripts/rp` follows all of this.
 
+**Never open the credential file, to look or to "check its shape".** `runpodctl` reads
+`~/.runpod/config.toml` itself, so for `runpodctl` you never touch the key at all. Only `rp` (REST calls)
+needs `RUNPOD_API_KEY` in the environment, and `scripts/with-runpod-key` supplies it to one command by
+reference, parsed with `tomllib`, never printed, never exported into your shell:
+
+```sh
+scripts/with-runpod-key scripts/rp up        # instead of reading the config and exporting the key
+```
+
+If you must learn what a credential file contains, list **key names or lengths only**
+(`grep -o '^[A-Za-z_]*' file`, or `python3 -c "import tomllib;print(list(tomllib.load(open(P,'rb'))))"`).
+Do not `cat`/`sed`/`head` it, and do not "mask" it: a mask is a deny-list that fails open. **2026-11-07
+incident:** a `sed 's/"[^"]*"/"<value>"/'` mask assumed double-quoted values; the config used single-quoted
+TOML strings, so the full API key printed into the transcript and had to be rotated. The mask was also
+unnecessary, because nothing required looking at the file.
+
+Also list pods with field selection, never raw: pod records can carry an `env` block with secrets
+(`runpodctl pod list | jq '.[] | {id, name, desiredStatus, costPerHr, imageName, uptimeSeconds}'`).
+
+A **global PreToolUse hook** (`~/.claude/hooks/secrets-guard.py`, registered in `~/.claude/settings.json`)
+now blocks Bash/Read/Grep calls that would print or copy credential files (`~/.runpod`, `~/.kaggle`,
+`~/.ssh` private keys, `.env`, cloud/CLI credential files), bare `env`/`printenv`/`export`, and
+`echo $SOME_TOKEN`. If it blocks you, switch to the key-names-only or by-reference pattern above; do not
+look for a way around it. It is a backstop with known gaps (a python/jq one-liner can still print), so the
+habit still matters. Tests: `python3 ~/.claude/hooks/test_secrets_guard.py`.
+
 ## When to use this / when not to
 
 - **Use it for:** build-time and batch compute — a training run, an eval sweep, a one-shot
@@ -171,6 +205,10 @@ limited-scope, revocable key — not your account-wide one. `scripts/rp` follows
 
 ## References — load on demand
 
+- **`references/observability.md`** — make a pod narrate itself and fail fast: stage markers, an
+  ERR trap, a 60 s heartbeat with WARN lines, per-step timeouts, streaming background logs, PID-based
+  waits (never a bare `wait`), publishing on failure, and driver-side watching. Read it before
+  writing any job script.
 - **`references/cost-safety.md`** — the dead-man's-switch recipe, terminate-not-stop, spot vs
   on-demand, the account spend cap. Read this before writing any launch command by hand.
 - **`references/runpodctl.md`** — installing and authenticating runpodctl; the current verb surface

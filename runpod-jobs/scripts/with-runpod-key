@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# with-runpod-key CMD [ARGS...]
+# Run CMD with RUNPOD_API_KEY in ITS environment only, read BY REFERENCE from ~/.runpod/config.toml
+# (or already in the environment). The value is never printed, never put on a command line, and never
+# exported into the calling shell. Use it for `rp` (which needs the env var) instead of ever opening
+# the config file:   with-runpod-key rp up
+# Parsed with tomllib, so single- and double-quoted TOML strings both work.
+set -euo pipefail
+[ "$#" -ge 1 ] || { echo "usage: with-runpod-key CMD [ARGS...]" >&2; exit 2; }
+if [ -z "${RUNPOD_API_KEY:-}" ]; then
+  RUNPOD_API_KEY="$(python3 -I - <<'PY'
+import os
+import sys
+import tomllib
+
+path = os.path.expanduser(os.environ.get("RUNPOD_CONFIG", "~/.runpod/config.toml"))
+try:
+    with open(path, "rb") as f:
+        key = tomllib.load(f).get("apikey", "")
+except Exception as e:
+    sys.exit(f"with-runpod-key: cannot read the key from the config ({type(e).__name__})")
+if not key:
+    sys.exit("with-runpod-key: no 'apikey' entry in the config")
+sys.stdout.write(key)
+PY
+)" || exit 1
+  export RUNPOD_API_KEY
+fi
+exec "$@"
