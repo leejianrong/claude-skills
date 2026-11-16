@@ -78,3 +78,9 @@ raw `pueue add`.
 - Jobs build from the working tree when they start. Do not switch branches or delete files that a queued job
   needs until the queue has drained.
 - Foreign jobs may appear in the queue. Report them to the user; do not remove them.
+- A VRAM share set too low can make a model server fail to start, and the job then exits fast with an error.
+  vLLM needs the model plus KV cache for its full context: a 9.7 GiB model at a 0.75 share of a 16 GB card
+  left 0.4 GiB for a 0.6 GiB KV cache. Keep the default share unless you know the model fits; read the job's
+  own log (not just pueue's "Failed") for the first `ValueError` or `ERROR` line.
+- Tell the other agent sessions on the machine when you queue work (list them, then message the local
+  interactive ones): the queue only protects the GPU if everyone uses it.
