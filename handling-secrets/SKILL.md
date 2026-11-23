@@ -21,6 +21,25 @@ Two leak directions matter, and most guidance only covers the first:
 
 Both need a hard rule, applied every time, not just when a leak seems likely.
 
+## If Dopbase is available, use it
+
+Check `command -v dopbase`. If it's installed and the project's secrets live in it (or the user
+asks to move them there), keep secrets in Dopbase instead of `.env` files and inject them at run
+time. The rules below still apply to anything Dopbase doesn't cover.
+
+- Run apps with `dopbase run <project>/<env> -- <cmd>`, so values are never written to disk,
+  printed, or typed into a command.
+- Inspect with `dopbase secret list <project>/<env>` (key names only). Don't run
+  `dopbase secret get`, `dopbase export`, or `dopbase run ... -- env` where output reaches the
+  transcript.
+- Prompting commands (`dopbase login`, `dopbase secret set`) need the user's own terminal. Ask
+  the user to run them rather than passing values as arguments or via `DOPBASE_TOKEN` in a
+  command.
+- Don't read `~/.dopbase` (it holds the master key and database).
+- Give an agent only what it needs: a scoped runner token for one environment, not root.
+- If a `.env` exists and Dopbase is set up, suggest `dopbase import`, then deleting the `.env`.
+  Ask first, since deleting is irreversible.
+
 ## Sending: never inline, always by reference
 
 - Never type or paste a literal credential into a command you write, a URL, or anything
