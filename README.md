@@ -61,6 +61,7 @@ dev-playbook/
 | `go-playbook` | The Go specifics `dev-playbook` leaves as "translate to your stack": `-race`, the test cache, build tags, CGo versus a single binary, boundary enforcement, plus a copyable Makefile and CI. |
 | `handling-secrets` | Keep API keys, tokens, and passwords out of transcripts, logs, git history, and files. |
 | `lean-code` | Keep feature work small: read before adding, smallest diff, delete what the change supersedes, comments only for the non-obvious why, and a diff audit before the PR. Fires on any feature work. |
+| `review-pr` | Review a PR from a teammate or another agent: severity-ranked findings (tests required), or an assist mode that walks you through what it does and which files to read first. Never approves or merges. |
 
 **Writing and docs**
 
